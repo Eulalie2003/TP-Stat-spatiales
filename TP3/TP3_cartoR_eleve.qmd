@@ -73,7 +73,24 @@ Vous utiliserez le **fond des communes de France metropolitaine (fonds/commune_f
 1. Commencez par vous créer votre jeu de données (jointure et création de variable). Attention avant de joindre vos données, il vous faudra d'abord homogénéiser la commune de Paris. Dans un fichier (`fond communal`), Paris est renseigné sous son code communal (75056). Dans l'autre, Paris est renseigné par arrondissement (75101 à 75120). Vous devrez donc **regrouper les arrondissements pour avoir une seule ligne pour Paris**. Cette ligne sera renseignée avec le `CODGEO` 75056.
 
 ```{r}
+# Import des donnees
+# Fond communes France metropolitaine
+communes_fm <- st_read("fonds/commune_francemetro_2021.gpkg") %>%
+select(code,libelle,surf)
 
+# Import des population légales des communes en 2019
+pop_com_2019 <- openxlsx::read.xlsx("data/Pop_legales_2019.xlsx")
+# Correction pour la ville de Paris1
+
+pop_com_2019 <- pop_com_2019 %>%
+  mutate(COM = if_else(substr(COM,1,3) == "751","75056",COM)) %>%
+  group_by(code = COM) %>%
+  summarise(pop = sum(PMUN19))
+
+# Jointure
+communes_fm <- communes_fm %>%
+  left_join(pop_com_2019, by="code") %>%
+  mutate(densite=pop/surf)
 ```
 
 2. Regarder rapidement la distribution de la variable de densité.
