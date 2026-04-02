@@ -155,7 +155,7 @@ str(communes_Bretagne$surf2)
 12. L'objectif est de créer une table départementale "dept_bretagne" sans doublons. Cette table devra contenir le code departement et la superficie du département. Représenter le nouveau fond sur une carte avec la fonction `plot()`.
 
 ```{r}
-dept_bretagne2<-communes_Bretagne %>%
+dept_bretagne2 <- communes_Bretagne %>%
   group_by(dep) %>%
   summarise(surf=sum(surf))
 
