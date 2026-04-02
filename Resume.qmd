@@ -1,0 +1,69 @@
+---
+title: "Resume"
+format: html
+---
+
+---
+title: "Synthèse : Introduction à la Statistique Spatiale avec R"
+format: html
+toc: true
+number-sections: true
+---
+
+## Introduction à la manipulation de données spatiales (TP2)
+
+L'objectif de cette thématique est de comprendre la structure d'un objet spatial et de réaliser des opérations géométriques de base avec le package `sf`[cite: 3].
+
+### Commandes et Utilité
+
+* **`st_read()`** : Permet d'importer des fichiers spatiaux (ex: `.gpkg`, `.shp`). Elle affiche des métadonnées cruciales comme le type de géométrie, la "Bounding box" (cadre englobant) et le système de projection (CRS)[cite: 19, 31, 32].
+* **`st_crs()`** : Affiche ou définit le système de coordonnées. Pour la France métropolitaine, le standard est le RGF93 / Lambert-93 (EPSG: 2154)[cite: 197, 233].
+* **`st_transform(x, crs)`** : Indispensable pour changer la projection d'une table (ex: passer de Lambert-93 au WGS84 pour `leaflet`)[cite: 483, 1072].
+* **`st_area()`** : Calcule la surface des polygones. Attention, l'unité dépend du CRS (souvent en $m^2$ pour le Lambert-93)[cite: 273, 278].
+* **`st_centroid()`** : Calcule le point central (centroïde) d'une géométrie (ex: le centre d'un département)[cite: 323, 325].
+* **`st_union()`** : Fusionne plusieurs géométries en une seule. Utilisé pour créer un fond départemental à partir d'un fond communal[cite: 308, 312].
+* **`st_intersects()`** : Prédicat spatial qui identifie si deux objets se touchent ou se chevauchent. Utile pour savoir dans quelle commune se situe un point précis[cite: 387, 401].
+* **`st_buffer(x, dist)`** : Crée une zone tampon d'une distance donnée autour d'une géométrie (ex: cercle de 20km autour d'un point)[cite: 449].
+
+### Concepts dplyr appliqués au spatial
+* **`select()`** : Contrairement aux dataframes classiques, `select()` sur un objet `sf` conserve toujours la colonne de géométrie par défaut[cite: 238, 243].
+* **`summarise()`** : Utilisé avec `group_by()`, il permet de dissoudre des frontières internes (agrégation spatiale)[cite: 301, 303].
+
+---
+
+## Cartographie et Discrétisation (TP3)
+
+Cette thématique traite de la représentation visuelle des données et de la transformation de variables continues en catégories[cite: 521].
+
+### Méthodes de discrétisation (Package `classInt`)
+La discrétisation est nécessaire lorsque la distribution d'une variable est déséquilibrée (ex: densité de population)[cite: 592, 1320].
+
+* **Quantiles (`style = "quantile"`)** : Chaque classe possède le même nombre d'unités spatiales. Idéal pour comparer les extrêmes[cite: 1323].
+* **Jenks / Fisher (`style = "jenks"`)** : Algorithme qui minimise la variance intra-classe et maximise la variance inter-classe. Très utilisé pour révéler des structures naturelles dans les données[cite: 622, 1324].
+* **Écarts-types (`style = "sd"`)** : Construit des classes basées sur la moyenne et l'écart-type. Adapté si la distribution suit une loi normale[cite: 1326, 1327].
+* **Pretty (`style = "pretty"`)** : Génère des bornes d'intervalles "rondes" (ex: tranches de 2000). Souvent peu informative pour des distributions très étalées[cite: 620, 621].
+
+### Outils de visualisation
+* **`mapsf::mf_map()`** : Fonction polyvalente pour cartes statiques.
+    * `type = "choro"` : Carte choroplèthe (aplats de couleurs pour des ratios)[cite: 872, 878].
+    * `type = "prop_choro"` : Combine des ronds proportionnels (stocks) et des couleurs (ratios)[cite: 991, 1028].
+* **`leaflet()`** : Création de cartes interactives (zoom, popups, fonds OpenStreetMap)[cite: 1064, 1086].
+
+---
+
+## Autocorrélation Spatiale (TP4)
+
+L'autocorrélation spatiale étudie si la valeur d'une variable à un endroit est liée aux valeurs de ses voisins[cite: 1340, 1467].
+
+### Analyse de voisinage (Package `spdep`)
+* **`poly2nb()`** : Définit la liste des voisins par contiguïté (méthode "Queen" par défaut : partage d'un côté ou d'un sommet)[cite: 1476, 1477].
+* **`nb2listw()`** : Transforme la liste de voisins en une matrice de pondération. Chaque voisin reçoit généralement un poids de $1/n$ (où $n$ est le nombre de voisins)[cite: 1640, 1642].
+
+### Mesures de l'autocorrélation
+* **Diagramme de Moran (`moran.plot()`)** : Graphique croisant la valeur d'une zone (abscisse) avec la moyenne de ses voisins (ordonnée)[cite: 1735, 1737].
+    * **High-High** : Zones de valeurs élevées entourées de valeurs élevées (Cluster positif)[cite: 1739, 1741].
+    * **Low-Low** : Zones de faibles valeurs entourées de faibles valeurs[cite: 1755, 1756].
+* **Indice I de Moran (`moran.test()`)** : Indicateur global. Si $I > 0$ et significatif ($p-value < 0.05$), il y a autocorrélation positive[cite: 1765, 1766, 1792].
+* **LISA (`localmoran()`)** : Indicateurs locaux. Permet de cartographier précisément où se trouvent les clusters spatiaux significatifs au sein d'une ville ou d'un pays[cite: 1822, 1823].
+
+---
