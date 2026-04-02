@@ -250,16 +250,53 @@ typeof(commune_centroid_bret)
 # dans notre table communale. Lorsque qu'il y a intersection l'élémen test renseigné, vide sinon.
 # On récupère les éléments non vides de notre liste avec la commande suivante
 which(lengths(commune_centroid_bret)>0)
+
+
+#Pouravoirlescommunesconcernées,onappliquecevecteurdepositionànotrefichierdecommunes.
+commune_centre_dep<-communes_Bretagne[which(lengths(commune_centroid_bret)>0),]
+# Equivalent en écriture dplyr
+commune_centre_dep<-communes_Bretagne %>%
+filter(lengths(commune_centroid_bret) >0)
+# REMARQUE, il est ici plus simple de faire l'intersection dans l'autre sens,
+# en mettant les centroid en 1er paramètre
+
+commune_centroid_bret2 <-st_intersects(centroid_dept_bret,communes_Bretagne)
+# Cela renvoie une liste de 4 éléments puis de faire
+commune_centre_dep<-communes_Bretagne[unlist(commune_centroid_bret2),]
+
+
+# Une autre façon est d'utiliser les crochets et l'option op=st_intersects
+communes_Bretagne[centroid_dept_bret,,op=st_intersects]
 ```
 
 16. Faire la même question avec la fonction `st_intersection()` puis avec la fonction `st_within()`. Quelles différences voyez-vous avec la fonction `st_intersects()` ?
 
 ```{r}
+Q16_intersection <- st_intersection(communes_Bretagne,centroid_dept_bret)
+
+# La fonction st_intersection nous renvoit directement le résultat attendu (dataframe).
+# Cette fonction est donc beaucoup plus pratique. Cependant, dans le cas de calculs lourds,
+# elle peut être très longue.
+#
+# Avec la fonction within, on regarde si un objet (1er paramètre) est contenu dans un
+# autre objet (2e paramètre). L'ordre des paramètre a donc une importance. Cette fonction renvoie encore une liste.
+
+Q16_within <- st_within(centroid_dept_bret,communes_Bretagne)
 ```
 
 17. Calculer la distance séparant les centroïdes des départements et leur chefs-lieux. Les chefs-lieux des départements bretons sont les communes de Saint-Brieuc (22), Quimper (29), Rennes (35) et Vannes (56). Vous utiliserez la fonction `st_distance()`.
 
 ```{r}
+Q17 <- st_distance(
+  centroid_dept_bret,
+  communes_Bretagne %>%
+    filter(libelle %in% c("Saint-Brieuc","Quimper","Rennes","Vannes"))
+  )
+
+Q17 <- data.frame(Q17)
+
+rownames(Q17) <- centroid_dept_bret$dep
+colnames(Q17) <- c("Saint-Brieuc","Quimper","Rennes","Vannes")
 ```
 
 18. Quelles sont les communes à moins de 20 km (à vol d'oiseau) de chaque centroïde ? 
@@ -267,21 +304,33 @@ which(lengths(commune_centroid_bret)>0)
  a. Utilisez la fonction `st_buffer(x,dist)` pour créer une zone de 20 km autour des centroïdes. Vous ferez attention aux unités.
 
 ```{r}
+buffer <- st_buffer(commune_centre_dep, dist = 20000)
 ```
 
  b. Représenter sur une carte la géométrie obtenue avec la fonction `plot()`.
 
 ```{r}
+plot(st_geometry(dept_bretagne))
+plot(st_geometry(centroid_dept_bret),add=TRUE)
+plot(buffer %>% st_geometry(),add=TRUE)
 ```
 
   c. Récupérez les communes comprises dans les tampons obtenus au 18.a avec la fonction `st_intersection()`.
 
 ```{r}
+plot(st_geometry(dept_bretagne))
+plot(st_geometry(centroid_dept_bret),add=TRUE)
+plot(buffer %>% st_geometry(),add=TRUE)
 ```
 
   d. Combien de communes sont concernées par département ?
 
 ```{r}
+Q18 %>%
+  st_drop_geometry() %>%
+  filter(dep_centroid==dep_intersect) %>%
+  group_by(dep_centroid) %>%
+  count()
 ```
 
 19.
@@ -289,16 +338,27 @@ which(lengths(commune_centroid_bret)>0)
   a. Changer le système de projection des communes bretonnes pour le mettre en WGS84 (EPSG=4326), avec la fonction `st_transform()`.
 
 ```{r}
+communes_Bretagne_wgs84 <- st_transform(communes_Bretagne, 4326)
 ```
 
   b. Représentez le fond ainsi produit.
   
 ```{r}
+par(mfrow = c(1,2)) ### une ligne et deux colonnes
+plot(st_geometry(communes_Bretagne), main = "epsg:2154")
+plot(st_geometry(communes_Bretagne_wgs84), main = "epsg:4326")
 ```
   
 20. Recalculer l'aire des communes pour créer une variable `surf3`. Que se passe t'il ? 
 
 ```{r}
+communes_Bretagne_wgs84<-communes_Bretagne_wgs84%>%
+  mutate(surf3=st_area(geom)) # calcul de l'air 
+st_crs(communes_Bretagne_wgs84)
+
+#L'unitéestendegré,lecalculdesdistances,airesnepeutsefairedirectement
+# surd'anciennesversionsdesf.
+#avecsf1.0.6:lecalculsefaitetlesvaleurssontprochesdesurf2sansêtreégales
 ```
 
 
