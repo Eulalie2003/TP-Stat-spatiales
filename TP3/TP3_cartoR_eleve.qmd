@@ -534,14 +534,24 @@ popcom_tb <-read.csv(
 c. Fusionner le fond communal et le tableau que vous venez de constituer. Assurez-vous que le fond communal soit restreint aux communes du département choisi. Changer le système de projection pour qu'il soit de type WGS84.
 
 ```{r}
-
+popcomd40_sf<-comfm_sf %>%
+  right_join(
+    popcom_tb,by= c("code"= "CODGEO")
+    ) %>%
+  st_transform(crs=4326)
 ```
 
 d. Ajouter à la carte interactive initialisée en a. les polygônes du fond communal du département choisi. Utiliser la fonction `addPolygons` en utilisant les arguments `data` (le fond communal), `weight` (pour préciser l'épaisseur des bordures), `color` (couleur des bordures des polygônes) et `fill=NA` (absence de couleur de remplissage).
 
 
 ```{r}
-
+map2 %>%
+  addPolygons(
+    data=popcomd40_sf,
+    weight=0.5, #widthoftheborders
+    color="purple",
+    fill=NA
+    )
 ```
 
 e. On souhaite ajouter une analyse thématique en représentant la part de moins de 14 ans dans chaque commune. 
@@ -564,13 +574,25 @@ pal <- colorQuantile(
 
 
 ```{r}
-
+pal <- colorQuantile(
+  "Blues",
+  domain=popcomd40_sf$PART18_POP0014,
+  n=5
+  )
 ```
 
 f. Ajouter l'analyse thématique à la carte interactive en ajoutant l'argument `fillColor` dans la fonction `addPolygons` utilisée en d. Retirer l'argument `fill` et ajouter l'argument `fillOpacity` pour gérer l'opacité de l'analyse thématique (1=opaque, 0=transparent).
 
 ```{r}
-
+map_choro <-map2 %>%
+  addPolygons(
+    data=popcomd40_sf,
+    weight=0.5, #width of the borders
+    color="purple",
+    fillOpacity=0.5,
+    fillColor=~pal(PART18_POP0014)
+)
+map_choro
 ```
 
 g. Ajouter la légende de l'analyse avec la fonction `addLegend()`.

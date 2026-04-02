@@ -77,7 +77,7 @@ commune_francemetro_2021 <- st_read("commune_francemetro_2021.gpkg")
 
 ```{r}
 str(commune_francemetro_2021)
-#L'informationimportanteestlefaitquenotreobjetsoitunobjetsfETundataframe
+# L'information importante est le fait que notre objet soit un objet sf ET un dataframe
 ```
 
 3. Afficher maintenant les dix premières lignes de la table et regarder la dernière colonne.
