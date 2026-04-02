@@ -96,20 +96,33 @@ communes_fm <- communes_fm %>%
 2. Regarder rapidement la distribution de la variable de densité.
 
 ```{r}
+summary(communes_fm$densite)
 
+hist(communes_fm$densite)
+# Une très grande majorité de communes avec une faible densité
+# Trois quarts des communes ont moins de 95 habitants au km2
 ```
 
 3. On souhaite représenter la variable de densité sous forme d'une carte choroplèthe. Faire cela en utilisant la fonction `plot()`. La variable de densité sera selectionnée par les crochets sur le modèle suivant : `ma_table["ma_variable_continue"]`. Ajouter également l'argument `border=FALSE` pour supprimer les bordures des polygônes.
 
 ```{r}
-
+plot(communes_fm["densite"], border=FALSE)
+# Une représentation réalisée directement sur une variable continue peut être pertinente quand
+# le nombre d'observations est très grand et quand la distribution est suffisamment équilibrée.
+#Or,la densité de population des communes en France métropolitaine est une variable très
+# déséquilibrée, avec une très grande majorité de communes en-dessous de 100 habitants/km²,
+# une moyenne à 162hab/km² et quelques communes très denses.
+# Ainsi,la carte construite est peu informative.(France très majoritairement rurale!)
 ```
 
 4. On se rend compte que la carte est peu informative et qu'il vaut mieux discrétiser notre variable. Représenter le résultat de la discrétisation de la densité de population selon les méthodes des quantiles, jenks et des écarts-types, ainsi que la méthode `pretty`. 
 Vous utiliserez la fonction `plot` en ajoutant l'argument `breaks=` + le nom de la méthode. Vous analyserez les différences entre les différentes cartes. Laquelle retiendriez-vous ? Pourquoi?
 
 ```{r}
-
+plot(communes_fm["densite"],breaks="sd",main="sd", border=FALSE) # sd
+plot(communes_fm["densite"],breaks="pretty", main="pretty", border=FALSE)
+plot(communes_fm["densite"],breaks="quantile", main="quantile", border= FALSE)
+plot(communes_fm["densite"],breaks="jenks", main="jenks", border=FALSE)
 ```
 
 5. Pour obtenir une classification satisfaisante, il faut pouvoir comparer la distribution de la variable continue avec celle de la variable discrétisée. Le package `classInt` est très utile pour construire et analyser les classes.
