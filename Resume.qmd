@@ -25,6 +25,8 @@ L'objectif de cette thématique est de comprendre la structure d'un objet spatia
 * **`st_intersects()`** : Prédicat spatial qui identifie si deux objets se touchent ou se chevauchent. Utile pour savoir dans quelle commune se situe un point précis[cite: 387, 401].
 * **`st_buffer(x, dist)`** : Crée une zone tampon d'une distance donnée autour d'une géométrie (ex: cercle de 20km autour d'un point)[cite: 449].
 
+* **`st_unit(surf_km2, km*km)`** : changer l'unité.
+
 ### Concepts dplyr appliqués au spatial
 * **`select()`** : Contrairement aux dataframes classiques, `select()` sur un objet `sf` conserve toujours la colonne de géométrie par défaut[cite: 238, 243].
 * **`summarise()`** : Utilisé avec `group_by()`, il permet de dissoudre des frontières internes (agrégation spatiale)[cite: 301, 303].
