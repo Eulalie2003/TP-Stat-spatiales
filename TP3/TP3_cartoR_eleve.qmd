@@ -208,8 +208,8 @@ popcomfm_sf <-communes_fm %>%
     densite_c=cut(
       densite,
       breaks= denspop_man_brks5,
-      include.lowest= TRUE,
-      right = FALSE,
+      include.lowest= TRUE, # inclure la plus faible valeur (aussi highest)
+      right = FALSE, # intervalle fermé à droite
       ordered_result= TRUE
       )
     )
@@ -219,6 +219,24 @@ e. Analyser la distribution de cette variable. Représenter la variable discrét
 
 ```{r}
 table(popcomfm_sf$densite_c)
+
+pal2 <-c(
+  RColorBrewer::brewer.pal(
+    n=5,
+    name="Greens"
+    )[4:3],
+  RColorBrewer::brewer.pal(
+    n=5,
+    name="YlOrRd"
+    )[c(2,4:5)]
+  )
+
+plot(
+  popcomfm_sf["densite_c"],
+  pal=pal2,
+  border=FALSE,
+  main= "Densité de population",
+)
 ```
 
 
@@ -232,7 +250,49 @@ Représenter sous forme de carte le taux de pauvreté par département. Vous uti
 1. Dans un premier temps, vous pourrez essayer de faire 3 cartes basiques : une en découpant la variables d'intérêt selon la méthode de Fisher (`breaks="fisher"`), une autre avec des classes de même amplitude (`"equal"`) et enfin selon la méthode des quantiles (`"quantile"`).
 
 ```{r}
+#Import des donnees
+dep_francemetro_2021<-st_read("fonds/dep_francemetro_2021.gpkg")
 
+tx_pauvrete <-read.xlsx("data/Taux_pauvrete_2018.xlsx")
+#Import du fond de la mer(optionnel)
+mer <-st_read("fonds/merf_2021.gpkg")
+
+# Résumé des jeux de données
+str(dep_francemetro_2021)
+
+str(tx_pauvrete)
+
+# Jointure pour rajouter le taux de pauvreté à notre fond départemental
+dep_francemetro_2021_pauv<-dep_francemetro_2021%>%
+  left_join(tx_pauvrete%>% select(-Dept), by=c("code"="Code"))
+
+# Représentation du taux de pauvreté avec la package mapsf
+# La variable est de type ratio, il s'agit donc d'une carte choroplèthe.
+# On peut déjà avoir une belle carte de manière très simple:
+# Methode de Fisher
+
+mf_map(x=dep_francemetro_2021_pauv,
+       var ="Tx_pauvrete",
+       type= "choro",
+       nbreaks= 4,
+       breaks="jenks"
+)
+
+#Methodedesquantiles
+mf_map(x=dep_francemetro_2021_pauv,
+       var ="Tx_pauvrete",
+       type= "choro",
+       nbreaks= 4,
+       breaks="quantile"
+       )
+
+#Methodedesquantiles
+mf_map(x=dep_francemetro_2021_pauv,
+       var ="Tx_pauvrete",
+       type= "choro",
+       nbreaks= 4,
+       breaks="quantile"
+       )
 ```
 
 
