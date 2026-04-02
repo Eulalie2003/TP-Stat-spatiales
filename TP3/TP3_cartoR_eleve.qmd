@@ -278,7 +278,7 @@ mf_map(x=dep_francemetro_2021_pauv,
        breaks="jenks"
 )
 
-#Methodedesquantiles
+# Methode des quantiles
 mf_map(x=dep_francemetro_2021_pauv,
        var ="Tx_pauvrete",
        type= "choro",
@@ -286,27 +286,96 @@ mf_map(x=dep_francemetro_2021_pauv,
        breaks="quantile"
        )
 
-#Methodedesquantiles
+# Methode des classes de même amplitude
 mf_map(x=dep_francemetro_2021_pauv,
        var ="Tx_pauvrete",
        type= "choro",
        nbreaks= 4,
-       breaks="quantile"
+       breaks="equal"
        )
+
 ```
 
 
 2. Dans un 2e temps, vous ferez un découpages manuel avec les seuils suivants : 0, 13, 17, 25, `max(Tx_pauvrete)`. La carte contiendra également un zoom sur Paris et sa petite couronne (departements 75, 92, 93, 94). 
 
 ```{r}
+# Réalisation d'une carte de quasi-diffusion, l'occasion de regarder les différentes options.
+# Creation d'un vecteur de codes couleurs (découpage de la couleur bleu "Mint")
+# On applique la fonction rev pour inverser l'ordre des codes :
+# on souhaite avoir du plus clair au plus foncé
+couleur <- rev(mf_get_pal(4,"Mint"))
 
+mf_map(x=dep_francemetro_2021_pauv,
+       # Variable à représenter
+       var = "Tx_pauvrete",
+       # Carte choroplethe
+       type = "choro",
+       # Seuils de découpage de notre variable
+       breaks= c(0,13,17,25, max(dep_francemetro_2021_pauv$Tx_pauvrete)),
+       pal = couleur,
+       # leg_val_rnd = 0
+       # On ne fait pas apparaitre la legende, on utilisera la fonction
+       # mf_legend() pour personnaliser les libelles
+       leg_pos = NA
+       )
+
+# Creation d'un encadre pour notre carte (ouverture)
+mf_inset_on(x = dep_francemetro_2021_pauv , pos = "topright", cex = .2)
+
+# Pour centrer/zoomer sur notre encadre sur notre territoire
+# (sinon Paris et sa couronne restent très petits)
+
+mf_init(dep_francemetro_2021_pauv %>%
+          filter(code %in% c("75","92","93","94")))
+
+# On recrée la carte choroplethe sur Paris et sa couronne
+
+mf_map(dep_francemetro_2021_pauv %>%
+         filter(code %in% c("75","92","93","94")),
+       var = "Tx_pauvrete",
+       type = "choro",
+       breaks= c(0,13,17,25,max(dep_francemetro_2021_pauv$Tx_pauvrete)),
+       # Ne pas faire apparaître la legende de l'encadre
+       leg_pos = NA,
+       # Ne pas oublier le add=TRUE pour superposer l'encadre à notre carte
+       add = TRUE)
+
+# Rajout des codes départements
+
+mf_label(dep_francemetro_2021_pauv %>%
+           filter(code %in% c("75","92","93","94")),
+         var = "code",
+         col = "black")
+
+# Fin de l'encadre (fermeture)
+mf_inset_off()
+
+# Rajout d'une legende
+
+mf_legend(
+  type="choro",
+  title = "Taux de pauvreté",
+  # Creation de labels personnalisés
+  # On est oblige de mettre une modalite fictive (ici "") pour avoir une tranche
+  val=c("","Moins de 13","De 13 à moins de 17","De 17 à moins de 25","25 ou plus"),
+  pal=couleur,
+  pos = "left"
+  )
+
+# Si l'on veut rajouter la mer
+
+mf_map(mer, add=TRUE)
+
+mf_layout(title = "Taux de pauvreté par département en 2018",
+          credits = "Source : Insee")
 ```
 
 3. Sauvegarder le jeu de données ayant servi à faire la carte. Pour cela, vous utilisez la fonction `sf::st_write()`. Votre sauvegarde se fera sous le format `gpkg` (geopackage) sous le nom **"dept_tx_pauvrete_2018.gpkg"**. 
 
 
 ```{r}
-
+st_write(dep_francemetro_2021_pauv,"dept_tx_pauvrete_2018.gpkg", delete_layer = T)
 ```
 
 
