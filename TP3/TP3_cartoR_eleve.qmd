@@ -138,7 +138,15 @@ objet_decoupe <- classIntervals(
 ```
 
 ```{r}
+denspop_quant <-classIntervals(
+communes_fm$densite,
+style="quantile",
+n=5
+)
+str(denspop_quant)
 
+head(denspop_quant$var) #variable numérique de départ
+denspop_quant$brks# bornes des intervalles construits
 ```
 
 b. Construire une palette de couleurs en lançant le code ci-dessous. Représenter ensuite l'objet précédent (découpage quantile) avec la fonction `plot()`et cette palette de couleur (argument `pal=`). Vous ajouterez l'argument `main =` à votre fonction `plot()` pour spécifier un titre. Analyser le graphique.
@@ -148,30 +156,69 @@ pal1 <- RColorBrewer::brewer.pal(n = 5, name = "YlOrRd")
 ```
 
 ```{r}
+plot(
+  denspop_quant,
+  pal=pal1,
+  main= "quantile"
+)
 
 ```
 
 c. Relancer l'analyse pour les méthodes sd, jenks et pretty. 
 
 ```{r}
-
+analyser_discret <-function(method,nb_classes){
+  denspop_c <-classIntervals(
+    communes_fm$densite,
+    style=method,
+    n=nb_classes
+    )
+  print(denspop_c$brks)
+  plot(
+    denspop_c,
+    pal=pal1,
+    main=method
+    )
+  return(denspop_c)
+}
 ```
 
 
 ```{r}
+# Avec 5 classes:
+all_discret <- sapply(c("quantile", "sd","pretty","jenks"), analyser_discret, nb_classes = 5)
+## c("quantile", "sd","pretty","jenks") : argument qui va varier à chaque fois
 
+quantile(communes_fm$densite, probs=seq(0,1,0.1))
+summary(communes_fm$densite)
+# 40 = médiane
+# 162 = moyenne
+# On reprend certaines bornes de Jenks- en fusionnant les derniers intervalles
+# Un exemple de découpage manuel avec 7 classes
+denspop_man_brks7 <-c(0,40,162,500,1000,4000,8000,27200)
+# Un exemple de découpage manuel avec 5 classes
+denspop_man_brks5 <-c(0,40,162,1000,8000,27200)
 ```
 
 d. Finalement, on décide de discrétiser notre variable avec les bornes suivantes : [0;40[, [40;162[, [162;1000[, [1000;8000[ et [8000;27200[. Ajouter la variable discrétisée dans le fond communal. Vous utiliserez la fonction `cut()`. Vous ferez attention à l'inclusion des bornes inférieures et à l'exclusion des bornes supérieures.
 
 ```{r}
-
+popcomfm_sf <-communes_fm %>%
+  mutate(
+    densite_c=cut(
+      densite,
+      breaks= denspop_man_brks5,
+      include.lowest= TRUE,
+      right = FALSE,
+      ordered_result= TRUE
+      )
+    )
 ```
 
 e. Analyser la distribution de cette variable. Représenter la variable discrétisée sur une carte, en créant préalablement une nouvelle palette de couleurs ayant le bon nombre de classes.
 
 ```{r}
-
+table(popcomfm_sf$densite_c)
 ```
 
 
